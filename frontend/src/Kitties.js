@@ -13,37 +13,34 @@ export default function Kitties (props) {
   const [kitties, setKitties] = useState([])
   const [status, setStatus] = useState('')
 
-  const [kittyDNAs, setKittyDNAs] = useState([]);
-  const [kittyOwners, setKittyOwners] = useState([]);
+  const [kittyDNAs, setKittyDNAs] = useState([])
+  const [kittyOwners, setKittyOwners] = useState([])
   const fetchKitties = () => {
     // TODO: 在这里调用 `api.query.kittiesModule.*` 函数去取得猫咪的信息。
     // 你需要取得：
-    
-    let unsubscribe;
     //   - 共有多少只猫咪
+
+    let unsubscribe
     api.query.kittiesModule.kittiesCount(cnt => {
-      if (cnt != ''){
-        console.log("kitties count: "+ cnt);
-        const kitty_ids = Array.from(Array(parseInt(cnt, 10)), (v, k) => k);
+      if (cnt !== '') {
+        console.log('kitties count: ', cnt)
+        const kittyIds = Array.from(Array(parseInt(cnt, 10)), (v, k) => k)
         //   - 每只猫咪的主人是谁
-        api.query.kittiesModule.owner.multi(kitty_ids, kitty_owners => {
-          console.log("owner:", kitty_owners);
-          setKittyOwners(kitty_owners);
-        })
-        .catch(console.error);
+        api.query.kittiesModule.owner.multi(kittyIds, kittyOwners => {
+          console.log('kittyOwners:', kittyOwners)
+          setKittyOwners(kittyOwners)
+        }).catch(console.error)
         //   - 每只猫咪的 DNA 是什么，用来组合出它的形态
-        api.query.kittiesModule.kitties.multi(kitty_ids, kitty_dna => {
-          console.log("kitties_dna:", kitty_dna);
-          setKittyDNAs(kitty_dna);
-        })
-        .catch(console.error);
+        api.query.kittiesModule.kitties.multi(kittyIds, kittyDna => {
+          console.log('kittyDna:', kittyDna)
+          setKittyDNAs(kittyDna)
+        }).catch(console.error)
       }
     }).then(unsub => {
-      unsubscribe = unsub;
-    })
-    .catch(console.error);
+      unsubscribe = unsub
+    }).catch(console.error)
 
-    return () => unsubscribe && unsubscribe();
+    return () => unsubscribe && unsubscribe()
   }
 
   const populateKitties = () => {
@@ -57,22 +54,22 @@ export default function Kitties (props) {
     //  ```
     // 这个 kitties 会传入 <KittyCards/> 然后对每只猫咪进行处理
 
-    let kitties = [];
-    for (let i = 0; i < kittyDNAs.length; ++i)  {
-      let temp = {};
-      temp.id = i;
-      temp.dna = kittyDNAs[i].unwrap();
-      temp.owner = keyring.encodeAddress(kittyOwners[i].unwrap());
+    const kitties = []
+    for (let i = 0; i < kittyDNAs.length; ++i) {
+      const temp = {}
+      temp.id = i
+      temp.dna = kittyDNAs[i].unwrap()
+      temp.owner = keyring.encodeAddress(kittyOwners[i].unwrap())
       console.log(temp)
 
-      kitties[i] = temp;
+      kitties[i] = temp
     }
     setKitties(kitties)
-    console.log("kitties" , kitties)
+    console.log('kitties', kitties)
   }
 
   useEffect(fetchKitties, [api, keyring])
-  useEffect(populateKitties, [kittyDNAs, kittyOwners])
+  useEffect(populateKitties, [keyring, kittyDNAs, kittyOwners])
 
   return <Grid.Column width={16}>
     <h1>小毛孩</h1>
